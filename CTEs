@@ -1,0 +1,29 @@
+-- ctes.sql
+
+-- 14. Bill statistics CTE
+WITH BillStats AS (
+    SELECT 
+        AVG("TotalAmount") AS AverageTotalAmount,
+        MIN("TotalAmount") AS MinimumTotalAmount,
+        MAX("TotalAmount") AS MaximumTotalAmount
+    FROM Bills
+)
+SELECT 
+    AverageTotalAmount,
+    MinimumTotalAmount,
+    MaximumTotalAmount
+FROM BillStats;
+
+
+-- 15. Outstanding balance per patient
+SELECT 
+    p."PatientID",
+    p."FirstName",
+    p."LastName",
+    SUM(b."TotalAmount" - b."PaidAmount") AS OutstandingBalance
+FROM Patients p
+JOIN Admissions a ON p."PatientID" = a."PatientID"
+JOIN Bills b ON a."AdmissionID" = b."AdmissionID"
+WHERE (b."TotalAmount" - b."PaidAmount") > 0
+GROUP BY p."PatientID", p."FirstName", p."LastName"
+ORDER BY OutstandingBalance DESC;
