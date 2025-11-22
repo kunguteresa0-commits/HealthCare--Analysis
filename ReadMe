@@ -1,0 +1,125 @@
+Here is a **GitHub-ready**, polished, professional **README.md** — fully formatted, clean, and ready to paste directly into your repo.
+
+---
+
+# 🏥 HealthCare Analysis
+
+This repository contains SQL solutions for a Hospital Management System.
+The tasks demonstrate real-world database operations, including querying, reporting, CTEs, window functions, and stored procedures.
+
+All SQL scripts are organized into separate files for clarity and modularity.
+
+---
+
+## 📂 Project Structure
+
+```
+Hospital-SQL-Project/
+│── ctes.sql
+│── stored_procedures.sql
+│── functions.sql
+│── queries.sql
+│── README.md
+```
+
+### **✔️ queries.sql**
+
+Contains all standard SQL queries (Tasks **1–13** and **16–19**) such as:
+
+* Patient filtering
+* Recent appointments
+* Doctor & patient joins
+* Treatment lookup
+* Billing and outstanding balance checks
+* Window functions (appointment ranking)
+* Inserts, updates, and deletes
+
+---
+
+### **✔️ ctes.sql**
+
+Contains Common Table Expression (CTE) queries:
+
+* **Task 14:** CTE for bill statistics (AVG / MIN / MAX)
+* **Task 15:** CTE for outstanding patient balances
+
+---
+
+### **✔️ stored_procedures.sql**
+
+Contains stored procedures created for the project:
+
+* **AddDoctor** → Inserts a doctor record
+* **AddAppointmentWithValidation** → Inserts an appointment *after validating*:
+
+  * Patient exists
+  * Doctor exists
+
+Both procedures include sample `CALL` statements.
+
+---
+
+### **✔️ functions.sql**
+
+Placeholder file for SQL functions.
+No standalone SQL functions were required, but this file is included for project completeness.
+
+---
+
+## ⚙️ Requirements
+
+To run the SQL scripts, you’ll need:
+
+* PostgreSQL or pgAdmin
+* The following tables pre-created in your database:
+
+  * `Patients`
+  * `Doctors`
+  * `Appointments`
+  * `Admissions`
+  * `Bills`
+  * `Treatments`
+  * `Prescriptions`
+
+---
+
+## 🚀 How to Use
+
+### **1. Clone the repository**
+
+### **2. Open the SQL files**
+
+Use:
+
+* pgAdmin
+* DBeaver
+* VS Code
+* Any PostgreSQL-compatible SQL editor
+
+### **3. Run scripts as needed**
+
+| File                      | Purpose                   |
+| ------------------------- | ------------------------- |
+| **queries.sql**           | General SQL tasks         |
+| **ctes.sql**              | CTE-based queries         |
+| **stored_procedures.sql** | Creates stored procedures |
+| **functions.sql**         | Placeholder               |
+
+---
+
+## ⭐ Highlights of This Project
+
+* Real hospital-style relational database logic
+* Proper use of JOINs, GROUP BY, HAVING, subqueries
+* Window functions for ranking
+* CTEs for improved readability
+* Data modification (INSERT, UPDATE, DELETE)
+* Stored procedures with validation logic
+* Clean, modular SQL file structure
+
+---
+
+## 👤 Author
+
+**Teresa Kungu**
+
