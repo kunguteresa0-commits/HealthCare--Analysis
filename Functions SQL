@@ -1,0 +1,33 @@
+-- functions.sql
+-- Helpful SQL functions to support reporting and calculations.
+
+-- 1. Function to compute outstanding balance for a given patient (sums across bills)
+CREATE OR REPLACE FUNCTION get_outstanding_balance(p_patient_id VARCHAR)
+RETURNS NUMERIC AS $$
+DECLARE
+    total_outstanding NUMERIC := 0;
+BEGIN
+    SELECT COALESCE(SUM(b."TotalAmount" - COALESCE(b."PaidAmount",0)),0)
+    INTO total_outstanding
+    FROM Bills b
+    JOIN Admissions a ON a."AdmissionID" = b."AdmissionID"
+    WHERE a."PatientID" = p_patient_id;
+
+    RETURN total_outstanding;
+END;
+$$ LANGUAGE plpgsql;
+
+
+-- 2. Function to return patient's full name
+CREATE OR REPLACE FUNCTION patient_full_name(p_patient_id VARCHAR)
+RETURNS TEXT AS $$
+DECLARE
+    full_name TEXT;
+BEGIN
+    SELECT p."FirstName" || ' ' || p."LastName" INTO full_name
+    FROM Patients p
+    WHERE p."PatientID" = p_patient_id;
+
+    RETURN full_name;
+END;
+$$ LANGUAGE plpgsql;
