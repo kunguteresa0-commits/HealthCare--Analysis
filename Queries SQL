@@ -1,0 +1,209 @@
+-- 1.Retrieve the list of all male patients who were born after 1990, including their patient ID, first name, last name, and date of birth
+SELECT 
+    "PatientID",
+    "FirstName",
+    "LastName",
+    "DateOfBirth"
+FROM Patients
+WHERE "Gender" = 'M' 
+    AND "DateOfBirth" > '1990-12-31'
+ORDER BY "DateOfBirth";
+
+-- 2. Produce a report showing the ten most recent appointments in the system, ordered from the 
+--newest to the oldest.
+
+SELECT DISTINCT "AppointmentID"
+FROM (
+    SELECT "AppointmentID" FROM Prescriptions
+    UNION
+    SELECT "AppointmentID" FROM Treatments
+)
+ORDER BY "AppointmentID"DESC
+LIMIT 10;
+
+--3 . Generate a report that shows all appointments along with the full names of the patients and 
+--doctors involved.
+SELECT 
+    a."AppointmentID",
+    a."AppointmentDate",
+    p."FirstName" || ' ' || p."LastName" AS PatientName,
+    d."FirstName" || ' ' || d."LastName" AS DoctorName
+FROM Appointments a
+JOIN Patients p ON p."PatientID" = a."PatientID"
+JOIN Doctors d ON a."DoctorID" = d."DoctorID";
+
+--4 .Prepare a list that shows all patients together with any treatments they have received, ensuring 
+--that patients without treatments also appear in the results
+
+SELECT 
+    p."PatientID",
+    p."FirstName" || ' ' || p."LastName" AS PatientName,
+    t."TreatmentID",
+    t."TreatmentType",
+    t."Outcome",
+    a."AppointmentDate"
+FROM Patients p
+LEFT JOIN Appointments a ON p."PatientID" = a."PatientID"
+LEFT JOIN Treatments t ON a."AppointmentID" = t."AppointmentID"
+ORDER BY p."PatientID", a."AppointmentDate" DESC;
+
+-- 5 . Identify any treatments recorded in the system that do not have a matching appointment
+-- - use the tables i uploaded , give the simplest querry
+
+SELECT "TreatmentID", "AppointmentID", "TreatmentType"
+FROM Treatments
+WHERE "AppointmentID"NOT IN (SELECT DISTINCT "AppointmentID" FROM Prescriptions);
+
+-- 6.Create a summary that shows how many appointments each doctor has handled, ordered from 
+--the highest to the lowest count.
+
+SELECT 
+    d."DoctorID",
+    d."FirstName",
+    d."LastName",
+    COUNT(a."AppointmentID") as AppointmentCount
+FROM Doctors d
+JOIN Appointments a ON d."DoctorID" = a."DoctorID"
+GROUP BY d."DoctorID", d."FirstName", d."LastName"
+ORDER BY AppointmentCount DESC;
+
+-- 7. Produce a list of doctors who have handled more than twenty appointments, showing their 
+--doctor ID, specialization, and total appointment count.
+
+SELECT 
+    d."DoctorID",
+    d."Specialization",
+    COUNT(a."AppointmentID") as TotalAppointmentCount
+FROM Doctors d
+JOIN Appointments a ON d."DoctorID" = a."DoctorID"
+GROUP BY d."DoctorID", d."Specialization"
+HAVING COUNT(a."AppointmentID") > 20
+ORDER BY TotalAppointmentCount DESC;
+
+--. 8 .Retrieve the details of all patients who have had appointments with doctors whose 
+--specialization is “Cardiology.
+SELECT DISTINCT
+    p."PatientID",
+    p."FirstName",
+    p."LastName",
+    p."DateOfBirth",
+    p."Gender",
+    d."DoctorID",
+    d."FirstName" as DoctorFirstName,
+    d."LastName" as DoctorLastName,
+    a."AppointmentDate"
+FROM Patients p
+JOIN Appointments a ON p."PatientID" = a."PatientID"
+JOIN Doctors d ON a."DoctorID" = d."DoctorID"
+WHERE d."Specialization" = 'Cardiology'
+ORDER BY a."AppointmentDate" DESC;
+select *from bills;
+--9. Produce a list of patients who have at least one bill that remains unpaid
+SELECT DISTINCT 
+    p."PatientID",
+    p."FirstName",
+    p."LastName",
+    p."Gender"
+FROM Patients p
+INNER JOIN Bills b ON p."PatientID" = SUBSTRING(b."AdmissionID", 3, LENGTH(b."AdmissionID"))
+WHERE b."OutstandingAmount" > 0 
+   OR b."OutstandingAmount" is NULL;
+
+select *from bills;
+
+-- 10. Retrieve all bills whose total amount is higher than the average total amount for all bills in 
+ --the system.
+
+SELECT 
+    "BillID",
+    "AdmissionID",
+    "TotalAmount",
+    "PaidAmount",
+    "OutstandingAmount"
+FROM Bills
+WHERE "TotalAmount" > (SELECT AVG("TotalAmount") FROM Bills)
+ORDER BY "TotalAmount" DESC;
+
+-- 11. For each patient in the database, identify their most recent appointment and list it along with 
+--the patient’s ID.
+
+SELECT "PatientID", "AppointmentID", "DoctorID", "AppointmentDate", "Status", "NurseID"
+FROM Appointments
+WHERE ("PatientID", "AppointmentDate") IN (
+    SELECT "PatientID", MAX("AppointmentDate")
+    FROM Appointments
+    GROUP BY "PatientID"
+)
+ORDER BY "PatientID";
+SELECT 
+    p."PatientID",
+    p."FirstName",
+    p."LastName",
+    a."AppointmentID",
+    a."DoctorID",
+    a."AppointmentDate",
+    a."Status",
+    a."NurseID"
+FROM Patients p
+INNER JOIN (
+    SELECT "PatientID", MAX("AppointmentDate") AS MostRecentDate
+    FROM Appointments
+    GROUP BY "PatientID"
+) recent ON p."PatientID" = recent."PatientID"
+INNER JOIN Appointments a ON p."PatientID" = a."PatientID" AND a."AppointmentDate" = recent.MostRecentDate
+ORDER BY p."PatientID";
+
+--12. For every appointment in the system, assign a sequence number that ranks each patient’s 
+--appointments from most recent to oldest.
+SELECT 
+    "AppointmentID",
+    "PatientID",
+    "DoctorID",
+    "AppointmentDate",
+    "Status",
+    "NurseID",
+    ROW_NUMBER() OVER (PARTITION BY "PatientID" ORDER BY "AppointmentDate" DESC) as AppointmentSequence
+FROM Appointments
+ORDER BY "PatientID", "AppointmentDate" DESC;
+
+-- 13. Generate a report showing the number of appointments per day for October 2021, including a 
+--running total across the month.
+SELECT
+    DATE("AppointmentDate") AS Day,
+    COUNT(*) AS AppointmentsPerDay,
+    SUM(COUNT(*)) OVER (ORDER BY DATE("AppointmentDate")) AS RunningTotal
+FROM Appointments
+WHERE DATE("AppointmentDate") BETWEEN '2021-10-01' AND '2021-10-31'
+GROUP BY DATE("AppointmentDate")
+ORDER BY Day;
+ 16. Create a query that generates all dates from January 1 to January 15, 2021, and show how 
+--many appointments occurred on each of those dates
+
+SELECT 
+    DATE("AppointmentDate") AS AppointmentDate,
+    COUNT(*) AS AppointmentCount
+FROM Appointments
+WHERE DATE("AppointmentDate") BETWEEN '2021-01-01' AND '2021-01-15'
+GROUP BY DATE("AppointmentDate")
+ORDER BY a."AppointmentDate";
+select *from appointments;
+
+-- 17. Add a new patient record to the Patients table, providing appropriate information for all 
+--required fields.
+INSERT INTO Patients ("PatientID", "FirstName", "LastName", "Gender", "DateOfBirth", "Email", "PhoneNumber")
+VALUES ('P1001', 'Juma', 'Lucy', 'F', '1985-03-15', 'j.lucy@example.com', '555-123-4267');
+
+--18. Modify the appointments table so that any appointment with a NULL status is updated to 
+--show “Scheduled.
+UPDATE Appointments 
+SET "Status" = 'Scheduled' 
+WHERE "Status" IS NULL;
+
+--19. Remove all prescription records that belong to appointments marked as “Cancelled
+
+DELETE FROM Prescriptions
+WHERE "AppointmentID" IN (
+    SELECT "AppointmentID" 
+    FROM Appointments 
+    WHERE "Status" = 'Cancelled'
+);
